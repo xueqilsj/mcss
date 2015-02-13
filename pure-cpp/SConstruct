@@ -1,0 +1,64 @@
+import os
+import sys
+
+#scons debug=1 .
+if ARGUMENTS.get('debug', 0):
+	env = Environment(CCFLAGS = '-g')
+else:
+	env = Environment(CCFLAGS = '-Wall -O3')
+#32 -O 18,-O2 17 -O3 14
+
+# % scons  define=FOO define=BAR
+cppdefines = []
+for key, value in ARGLIST:
+	if key == 'define':
+		cppdefines.append(value)
+		
+env.Append(CPPDEFINES = cppdefines)
+if "RANDOM_CL" in cppdefines:
+	Random_cpp='Random_cl.cpp'
+elif "RANDOM_MM" in cppdefines:
+	Random_cpp='Random_mm.cpp'
+else:
+	Random_cpp='Random.cpp'
+	
+env.Append(ENV=os.environ)   
+
+COREDIR = '../core-cpp'
+env.Append(
+    CPPPATH=[COREDIR,'.']
+  #,LIBPATH=[PY_LIBS]
+)
+
+PottsCore = ['Potts.cpp', Random_cpp]
+IsingCore = ['Ising.cpp', 'Random.cpp']
+SParCore = ['SParticle.cpp', Random_cpp]
+LqFluid = ['LqFluid.cpp', Random_cpp]
+
+FullPottsCore=map((lambda f: os.path.join(COREDIR, f)), PottsCore)
+FullIsingCore=map((lambda f: os.path.join(COREDIR, f)), IsingCore)
+FullSParCore=map((lambda f: os.path.join(COREDIR, f)), SParCore)
+FullLqFluid=map((lambda f: os.path.join(COREDIR, f)), LqFluid)
+
+nvti=env.Program(target = 'bin/NVTIsing',source =  ['NVTIsing.cpp',FullIsingCore])
+nvts=env.Program(target = 'bin/NVTSPart',source =  ['NVTSPart.cpp',FullSParCore])
+
+lq=env.Program(target = 'bin/lqfluid',source =  ['LqFluidMC.cpp', FullLqFluid])
+
+
+nvt=env.Program(target = 'bin/NVTPotts',source =  ['NVTPotts.cpp',FullPottsCore])
+nve=env.Program(target = 'bin/NVEPotts',source =   ['NVEPotts.cpp',FullPottsCore])
+nvtwf=env.Program(target = 'bin/NVTWFPotts',source =  ['NVTWFPotts.cpp',FullPottsCore])
+gcewf=env.Program(target = 'bin/GCEWFPotts',source =  ['GCEWFPotts.cpp',FullPottsCore])
+ge=env.Program(target = 'bin/GEPotts',source =   ['GEPotts.cpp',FullPottsCore])
+rce=env.Program(target = 'bin/RCEPotts',source =  ['RCEPotts.cpp',FullPottsCore])
+gce=env.Program(target = 'bin/GCEPotts',source =  ['GCEPotts.cpp',FullPottsCore])
+mulce=env.Program(target = 'bin/MulCEPotts',source =   ['MulCEPotts.cpp',FullPottsCore])
+mulrce=env.Program(target = 'bin/MulRCEPotts',source =   ['MulRCEPotts.cpp',FullPottsCore])
+wl=env.Program(target = 'bin/WLPotts',source =  ['WLPotts.cpp',FullPottsCore])
+rcex=env.Program(target = 'bin/RCEXPotts',source =  ['RCEXPotts.cpp',FullPottsCore])
+autocorr=env.Program(target = 'bin/AutoCorr',source = ['AutoCorr.cpp'])
+denspotts=env.Program(target = 'bin/DensPotts',source = ['DensPotts.cpp',FullPottsCore])
+densIsing=env.Program(target = 'bin/DensIsing',source = ['DensIsing.cpp',FullIsingCore])
+wlxising=env.Program(target = 'bin/WLXIsing',source =  ['WLXIsing.cpp',FullIsingCore])
+

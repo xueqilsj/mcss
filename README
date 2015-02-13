@@ -1,0 +1,110 @@
+Monte Carlo Statistical Simulation in Lattice model
+Date:Jun 20,2009
+
+python+swig c++ extension module
+&&
+matlab+mex c++ extension module  
+
+Introduction
+====================
+Performance reference
+----------------------
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 Quad CPU    Q6700  @ 2.66GHz
+stepping	: 11
+cpu MHz		: 2659.956
+cache size	: 4096 KB
+
+Potts,Q=10,50*50,T=0.85
+stride=10*50*50
+sample=1000
+    PyPotts.MetroplisTrial()  elapsed=5.65s        :hash exp(delta E)
+    smcsim -f NVT MetroplisTrial() elapsed=6.93s   :calculate exp(delta E)
+    (T:0.65,0.6559)
+    PyPotts.MetroplistTrialSe() elapsed=6.85s    :hash Se[E]
+    PyPotts.MetroplisTrialEx() elapsed=20.59s    :calculate Se[E]
+    
+Potts,Q=10,12*12,Wanglandau,LnF=1e-8,FlatRate=0.85,stride=N*Q,ran.Srand(123487)
+	self.InitConf(1)#anti-ground state
+	  PyPotts.WangLandauTrial() elapsed=185.98s
+	  PyPotts.WangLandauTrial() elapsed=187.98s(sum average GeN)
+	  smcsim -w   elapsed=290.65s Accum()&_fCheckOut()(a1.txt)
+	  smcsim -w   elapsed=288.88s (a2.txt)
+	self.InitConf(-1)#ground state
+	  smcsim -w   elapsed=352.03s (b2.txt,b22.txt)
+	  PyPotts.WangLandauTrial() elapsed=186.68s 
+	  {N		409.71s
+	  2*N		235.36 
+	  4*N		232.73
+	  N*Q		186.68s
+	  N*12		157.5s
+	  N*13		244.22s
+	  N*15		286.93s 
+	  2*N*Q		239.69s
+	  5*N*Q		197.04s
+	  10*N*Q	362.27s}
+	self.InitConf(0)#random state
+	  smcsim -w   elapsed=377.84s (r2.txt)	
+	  PyPotts.WangLandauTrial() elapsed= 226.22s
+
+tic,for i=1:1000,matpotts(conf,10,0.85,50*50*10,2);end,toc
+Elapsed time is 5.644314 seconds.
+
+time-consuming:
+	self.H = self.PyGetHistogram() vs [0] * len(self.E)=5:1
+	self.TR = numpy.array([]) vs []#append(): 40:1 
+
+
+Potts
+10000*50*50*10
+ update Delt() python:64.72 -> 61.30seconds
+ising
+T=2.23, 10000*50*50*10
+update Delta() python:
+48.6312-> 44.2893500328 seconds
+	
+USING THE LIBRARY
+----------------------
+pott=PyPotts(10)
+dimv_t = zeros((50, 50), Int8)
+dimv=pott.PySetConf(self.dimv_t)
+pott.RandConf()
+pott.Gauge()
+EH = self.pott.PyGetEH()#numpy array E(n),H(n) 
+    pott.SetTemperature(0.61)#For canonical simulation
+    pott.MetroplisTrial(Stride)
+or
+                # 0 1 2  3   4   5 6  7   8
+                #[E,T,E2,A,sigma,B,Eo,E2o,B] len>=6
+    TEPoints = [[-4656.04365, 0.65, 21701909.8689, 0, 0, 1000, 0, 0, 0]]    
+    TEPoints.sort()#sort by E
+    numTEP = self.pott.PyReSetFun(TEPoints)
+    Beta, S = self.pott.PyCalBS(0.85)#numpy array B(n),S(n)
+    pott.MetroplisTrialSe(Stride)
+
+Prerequisite
+=====================
+sudo apt-get install python-dev
+sudo apt-get install swig
+sudo apt-get install g++
+sudo apt-get install python-numpy
+sudo apt-get install python-matplotlib
+sudo apt-get install python-tk
+
+INSTALLATION
+==========================
+tar xvfz PyMcSim-1.0.tar.gz 
+python setup.py install
+or
+python setup.py build_ext --inplace
+
+
+Examples
+==============
+from pymcsim.NVTPotts import CNVTPotts
+from pymcsim.WLPotts import CWLPotts
+
+python examples/NVT_Potts.py
+

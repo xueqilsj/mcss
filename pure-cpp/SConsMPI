@@ -1,0 +1,25 @@
+import os
+import sys
+
+
+#scons debug=1 .
+if ARGUMENTS.get('debug', 0):
+	env = Environment(CCFLAGS = '-g')
+else:
+	env = Environment(CCFLAGS = '-Wall -O3')
+	
+env.Append(ENV=os.environ)   
+
+COREDIR = '../core-cpp'
+env.Append(
+    CPPPATH=[COREDIR,'.'],
+  #  LIBPATH=[PY_LIBS],
+)
+CORECPP = ['Potts.cpp', 'Random.cpp']
+FULLCORECPP=map((lambda f: os.path.join(COREDIR, f)), CORECPP)
+
+env.Replace(CXX = 'mpicxx')
+env.Append(INCLUDES = '-DMPICH')
+env.Append(CXXFLAGS = "-DMPICH_IGNORE_CXX_SEEK")
+temprce=env.Program(target = 'bin/TemperMPI_RCEPotts',source = ['TemperMPI_RCEPotts.cpp','MPITemper.cpp',FULLCORECPP])
+

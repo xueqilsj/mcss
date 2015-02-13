@@ -1,0 +1,49 @@
+import os
+import sys
+
+
+#scons debug=1 .
+if ARGUMENTS.get('debug', 0):
+	env = Environment(CCFLAGS='-g')
+else:
+	env = Environment(CCFLAGS='-fopenmp -Wall -O3')#-openmp for icpc
+
+env.Append(ENV=os.environ)   
+
+cppdefines = []
+Random_cpp = ''
+for key, value in ARGLIST:
+	if key == 'define':
+		cppdefines.append(value)
+		
+env.Append(CPPDEFINES=cppdefines)
+if "RANDOM_CL" in cppdefines:
+	Random_cpp = 'Random_cl.cpp'
+elif "RANDOM_MM" in cppdefines:
+	Random_cpp = 'Random_mm.cpp'
+else:
+	Random_cpp = 'Random.cpp'
+
+COREDIR = '../core-cpp'
+env.Append(
+    CPPPATH=[COREDIR, '.']
+  #  ,LIBPATH=[PY_LIBS],
+)
+PottsCore = ['Potts.cpp', Random_cpp]
+IsingCore = ['Ising.cpp', 'Random.cpp']
+
+FullPottsCore=map((lambda f: os.path.join(COREDIR, f)), PottsCore)
+FullIsingCore=map((lambda f: os.path.join(COREDIR, f)), IsingCore)
+
+
+#env.Replace(CXX = 'icpc')
+#env.Append(LINKFLAGS="-openmp")
+
+
+env.Append(LINKFLAGS="-fopenmp")#g++
+
+tempIrce = env.Program(target='bin/TemperOMP_GCEIsing', source=['TemperOMP_GCEIsing.cpp', FullIsingCore])
+tempMPrce = env.Program(target='bin/TemperOMP_GCEPotts', source=['TemperOMP_GCEPotts.cpp', FullPottsCore])
+#tempMPrce3=env.Program(target = 'bin/TemperOMP_RCEPotts3',source = ['TemperOMP_RCEPotts3.cpp',FullPottsCore])
+testpt2=env.Program(target = 'bin/TestNVTPT',source = ['TestNVTPT.cpp',FullPottsCore])
+
