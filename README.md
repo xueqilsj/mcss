@@ -1,5 +1,9 @@
 # Monte Carlo Statistical Simulation in Lattice model
 
+![Image of MCSSS]
+(https://github.com/xueqilsj/mcss/blob/master/Screenshot.png) 
+
+
 python+swig c++ extension module && matlab+mex c++ extension module  
 
 ## Prerequisite
